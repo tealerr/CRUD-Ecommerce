@@ -59,3 +59,6 @@ Thumbs.db
 
 # Ignore all files in the .clj-kondo/.cache directory
 .clj-kondo/.cache/*
+
+# Ignore .code-workspace files
+*.code-workspace
