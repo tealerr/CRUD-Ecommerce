@@ -48,3 +48,9 @@ Thumbs.db
 *.mov
 *.wmv
 
+.vs
+.vscode
+# please stop pushing obj
+*/obj
+*/bin
+
