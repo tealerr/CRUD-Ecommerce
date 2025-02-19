@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
+using Common.Repositories;
+using Common.Models;
 
-namespace Ecommerce.Controllers.Admin
+namespace Admin.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

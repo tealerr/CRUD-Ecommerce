@@ -1,41 +1,94 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
+using Common.Repositories;
+using Common.Models;
+using System.Threading.Tasks;
 
-namespace Ecommerce.Controllers.Admin
+namespace Admin.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
-        // POST: api/product/list
-        [HttpPost("list")]
-        public IActionResult GetProducts()
+        // POST: api/admin/products
+        [HttpPost]
+        [Route("products")]
+        public IActionResult GetProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            return NoContent();
+            ProductRepositories repository = new();
+
+            if (pageNumber < 1 || pageSize < 1)
+            {
+                return BadRequest("Page number and page size must be greater than zero.");
+            }
+
+            var products = repository.GetProductList(pageNumber, pageSize);
+            if (products == null || products.Count == 0)
+            {
+                return NotFound("No products found.");
+            }
+
+            return Ok(new
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalProducts = products.Count,
+                Products = products
+            });
         }
 
-        // GET: api/product/{id}
-        [HttpGet("{id}")]
-        public IActionResult GetProduct(int id)
+        // GET: api/admin/{productId}
+        [HttpGet("product/{productId}")]
+        public IActionResult GetProductByID(string productId)
         {
-            return NoContent();
+            if (string.IsNullOrWhiteSpace(productId))
+            {
+                return BadRequest("Product ID is required.");
+            }
 
+            ProductRepositories repository = new();
+
+            var product = repository.GetProductByID(productId);
+
+            if (product == null)
+            {
+                return NotFound($"Product with ID '{productId}' not found.");
+            }
+
+            return Ok(new
+            {
+                Product = product
+            });
         }
 
-        // PUT: api/product/edit
-        [HttpPut("edit")]
-        public IActionResult EditProduct()
+        // PUT: api/admin/edit-product
+        [HttpPut("edit-product")]
+        public async Task<IActionResult> UpdateProduct([FromBody] Product product)
         {
-            // This is just a placeholder. Replace with actual logic to edit a product.
-            return NoContent();
+            ProductRepositories repository = new();
+
+            var result = await repository.UpdateProduct(product);
+
+            if (!result)
+            {
+                return BadRequest(new { Message = "Can not updated product info" });
+            }
+
+            return Ok(new { Message = "Product updated successfully" });
         }
 
-        // DELETE: api/product/delete/{id}
-        [HttpDelete("delete/{id}")]
-        public IActionResult DeleteProduct(int id)
+        // DELETE: api/product/delete
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteProduct([FromQuery] int productId, sbyte IsDelete)
         {
-            // This is just a placeholder. Replace with actual logic to delete a product.
+            ProductRepositories repository = new();
+
+            var result = await repository.DeleteProduct(productId, IsDelete);
+
+            if (!result)
+            {
+                return BadRequest(new { Message = "Can not updated product info" });
+            }
+
             return Ok(new { Message = "Product deleted successfully" });
         }
     }

@@ -33,7 +33,7 @@ namespace Customer.Controllers
             });
         }
 
-        [HttpGet("get-product-by-id/{productId}")]
+        [HttpGet("product/{productId}")]
         public IActionResult GetProductByID(string productId)
         {
             if (string.IsNullOrWhiteSpace(productId))
