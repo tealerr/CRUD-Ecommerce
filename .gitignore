@@ -54,3 +54,8 @@ Thumbs.db
 */obj
 */bin
 
+# Ignore all files in the .lsp/.cache directory
+.lsp/.cache/*
+
+# Ignore all files in the .clj-kondo/.cache directory
+.clj-kondo/.cache/*

@@ -1,3 +1,5 @@
+using Common.Models;
+using Common.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Customer.Controllers
@@ -7,17 +9,31 @@ namespace Customer.Controllers
     public class CartController : ControllerBase
     {
         // POST: api/cart/calculate
-        [HttpPost("calculate")]
-        public IActionResult Calculate()
+        [HttpPost("calculate/{transactionId}")]
+        public async Task<IActionResult> Calculate(int transactionId)
         {
-            return Ok();
+            CartRepositories repository = new CartRepositories();
+
+            // Calculate the total price of the cart
+            var totalPrice = await repository.CalculateItemsInCart(transactionId);
+
+            return Ok(new { results = totalPrice });
         }
 
         // POST: api/cart/submit
         [HttpPost("submit")]
-        public IActionResult Submit()
+        public async Task<IActionResult> Submit([FromBody] UserTransactionProduct item)
         {
-            return Ok(new { Message = "Cart submitted successfully" });
+            CartRepositories repository = new CartRepositories();
+
+            var result = await repository.AddItemToCart(item);
+
+            if (!result)
+            {
+                return BadRequest("Failed to add item to cart.");
+            }
+
+            return Ok(new { results = "Item added to cart." });
         }
     }
 }
