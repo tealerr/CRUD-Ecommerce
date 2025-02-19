@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Admin.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     public class ProductController : ControllerBase
     {
         // POST: api/admin/products

@@ -6,10 +6,10 @@ using System.Linq;
 namespace Customer.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customer/[controller]")]
     public class TransactionController : ControllerBase
     {
-        [HttpGet("get-transaction-by-id/{transactionId}")]
+        [HttpGet("transaction/{transactionId}")]
         public IActionResult GetTransactionByID(string transactionId)
         {
             if (string.IsNullOrWhiteSpace(transactionId))
@@ -36,7 +36,7 @@ namespace Customer.Controllers
         [Route("transactions")]
         public IActionResult GetTransactions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            TransactionRepositories repository = new TransactionRepositories();
+            TransactionRepositories repository = new();
 
             if (pageNumber < 1 || pageSize < 1)
             {

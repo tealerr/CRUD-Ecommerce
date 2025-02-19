@@ -6,7 +6,7 @@ using System.Linq;
 namespace Admin.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     public class TransactionController : ControllerBase
     {
         // POST: api/transaction/list

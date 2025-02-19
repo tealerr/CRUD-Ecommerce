@@ -5,7 +5,7 @@ using Common.Models;
 namespace Admin.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     public class UserController : ControllerBase
     {
 
@@ -13,7 +13,7 @@ namespace Admin.Controllers
         [Route("users")]
         public IActionResult GetUsers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            UserRepositories repository = new UserRepositories();
+            UserRepositories repository = new();
 
             if (pageNumber < 1 || pageSize < 1)
             {

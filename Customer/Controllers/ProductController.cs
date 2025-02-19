@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Customer.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customer/[controller]")]
     public class ProductController : ControllerBase
     {
         [HttpPost]

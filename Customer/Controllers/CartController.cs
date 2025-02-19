@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Customer.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/customer/[controller]")]
     public class CartController : ControllerBase
     {
         // POST: api/cart/calculate
