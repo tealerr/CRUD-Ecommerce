@@ -10,11 +10,11 @@ namespace Customer.Controllers
     public class TransactionController : ControllerBase
     {
         [HttpGet("transaction/{transactionId}")]
-        public IActionResult GetTransactionByID(string transactionId)
+        public IActionResult GetTransactionByID(int transactionId)
         {
-            if (string.IsNullOrWhiteSpace(transactionId))
+            if (transactionId < 1)
             {
-                return BadRequest("Product ID is required.");
+                return BadRequest("Transaction ID must be greater than zero.");
             }
 
             TransactionRepositories repository = new TransactionRepositories();

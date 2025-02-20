@@ -405,7 +405,7 @@
         public static readonly string InvoiceLength = "invoice_length";
         public static readonly string GeneratePdf = "generate_pdf";
         public static readonly string AutoLeadingZero = "auto_leading_zero";
-        public static readonly string UserGuid = "UserGuid";
+        public static readonly string UserGuid = "UserGUID";
         public static readonly string ReceiptTime = "receipt_time";
         public static readonly string UserBillingAddressId = "user_billing_address_id";
         public static readonly string BillingAddressType = "billing_address_type";

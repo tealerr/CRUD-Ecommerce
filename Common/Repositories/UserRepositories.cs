@@ -1,6 +1,4 @@
-using System.Data.Common;
 using System.Diagnostics;
-using Common;
 using Common.Helper;
 using Common.Models;
 using Common.Request;
@@ -35,13 +33,30 @@ namespace Common.Repositories
             }
         }
 
-        public async Task<bool> AddUserAsync(User user)
+        public async Task<bool> AddUserAsync(RegisterUser user)
         {
             try
             {
+                string newUserGuid = GuidHelper.GenerateGuid();
+                var newUser = new User
+                {
+                    Firstname = user.Firstname,
+                    Lastname = user.Lastname,
+                    Nickname = user.Nickname,
+                    UserGuid = newUserGuid,
+                    CreatedTime = DateTime.Now
+                };
+
                 var connection = new DBConnection().Connect();
                 var result = await connection.Query(Table.User)
-                .InsertAsync(user);
+                .InsertAsync(new
+                {
+                    newUser.Firstname,
+                    newUser.Lastname,
+                    newUser.Nickname,
+                    newUser.UserGuid,
+                    newUser.CreatedTime
+                });
 
                 connection.Connection.Close();
 
@@ -66,29 +81,28 @@ namespace Common.Repositories
                 var connection = new DBConnection().Connect();
                 var userInfos = await connection.Query(Table.User)
                 .Where(Column.UserGuid, user.UserGuid)
-                .FirstOrDefaultAsync<User>() ?? throw new Exception("User not found.");
+                .FirstOrDefaultAsync<User>();
 
-                User updatedUserInfos = new()
+                if (userInfos == null)
                 {
-                    Firstname = user.Firstname ?? userInfos.Firstname,
-                    Lastname = user.Lastname ?? userInfos.Lastname,
-                    Nickname = user.Nickname ?? userInfos.Nickname,
-                    CreatedTime = userInfos.CreatedTime,
-                    UserGuid = userInfos.UserGuid,
-                    Id = userInfos.Id
-                };
-
+                    return false;
+                }
                 // Apply update
                 await connection.Query(Table.User)
                 .Where(Column.UserGuid, user.UserGuid)
-                .UpdateAsync(updatedUserInfos);
+                .UpdateAsync(new
+                {
+                    Firstname = user.Firstname ?? userInfos.Firstname,
+                    Lastname = user.Lastname ?? userInfos.Lastname,
+                    Nickname = user.Nickname ?? userInfos.Nickname
+                });
 
                 connection.Connection.Close();
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error updating user: {ex.Message}");
+                Console.Error.WriteLine($"Error updating user: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
                 return false;
             }

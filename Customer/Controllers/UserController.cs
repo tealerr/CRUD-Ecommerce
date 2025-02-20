@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Common.Models;
 using Common.Repositories;
+using Common.Request;
 namespace Customer.Controllers
 {
     [ApiController]
@@ -11,16 +12,9 @@ namespace Customer.Controllers
         // POST: register user
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register([FromBody] User user)
+        public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
-            UserRepositories repository = new UserRepositories();
-
-            // check duplicate user
-            string existingUser = "";
-            if (user.UserGuid == existingUser)
-            {
-                return BadRequest(new { Message = "User already exists" });
-            }
+            UserRepositories repository = new();
 
             // Add user
             var result = await repository.AddUserAsync(user);
@@ -34,7 +28,7 @@ namespace Customer.Controllers
 
         [HttpPut]
         [Route("update-infos")]
-        public async Task<IActionResult> UpdateUser([FromBody] User user)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUser user)
         {
             UserRepositories repository = new UserRepositories();
 
@@ -43,7 +37,7 @@ namespace Customer.Controllers
 
             if (!result)
             {
-                return BadRequest(new { Message = "User not found" });
+                return BadRequest(new { Message = "User asasas not found" });
             }
 
             return Ok(new { Message = "User updated successfully" });
