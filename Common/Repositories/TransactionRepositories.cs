@@ -34,14 +34,14 @@ namespace Common.Repositories
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error finding product list: {ex.Message}");
+                Debug.WriteLine($"Error finding transaction list: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
 
                 return null;
             }
         }
 
-        public UserTransaction? GetUserTransactionByID(string txId)
+        public UserTransaction? GetUserTransactionByID(int txId)
         {
             try
             {

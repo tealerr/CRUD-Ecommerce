@@ -9,7 +9,6 @@ namespace Admin.Controllers
     [Route("api/[controller]")]
     public class TransactionController : ControllerBase
     {
-        // POST: api/transaction/list
         [HttpPost("transactions")]
         public IActionResult GetTransactions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -36,13 +35,17 @@ namespace Admin.Controllers
             });
         }
 
-        // GET: api/transaction/{id}
-        [HttpGet("transaction/{transactionId}")]
-        public IActionResult GetTransactionByID(string transactionId)
+        [HttpGet("{transactionId}")]
+        public IActionResult GetTransactionByID(int transactionId)
         {
-            if (string.IsNullOrWhiteSpace(transactionId))
+            if (transactionId.GetType() != typeof(int))
             {
-                return BadRequest("Product ID is required.");
+                return BadRequest("Transaction ID must be an integer.");
+            }
+
+            if (transactionId < 1)
+            {
+                return BadRequest("Transaction ID is required.");
             }
 
             TransactionRepositories repository = new();
