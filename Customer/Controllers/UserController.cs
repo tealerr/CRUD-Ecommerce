@@ -4,7 +4,7 @@ using Common.Repositories;
 namespace Customer.Controllers
 {
     [ApiController]
-    [Route("api/customer/[controller]")]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
 

@@ -6,7 +6,7 @@ using System.Linq;
 namespace Customer.Controllers
 {
     [ApiController]
-    [Route("api/customer/[controller]")]
+    [Route("api/[controller]")]
     public class TransactionController : ControllerBase
     {
         [HttpGet("transaction/{transactionId}")]

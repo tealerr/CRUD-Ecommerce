@@ -5,7 +5,7 @@ using Common.Models;
 namespace Admin.Controllers
 {
     [ApiController]
-    [Route("api/admin/[controller]")]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
 
