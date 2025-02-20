@@ -30,17 +30,30 @@ namespace Customer.Controllers
         [Route("update-infos")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUser user)
         {
-            UserRepositories repository = new UserRepositories();
-
-            // update user data
-            var result = await repository.UpdateUserAsync(user);
-
-            if (!result)
+            try
             {
-                return BadRequest(new { Message = "User asasas not found" });
-            }
+                UserRepositories repository = new();
 
-            return Ok(new { Message = "User updated successfully" });
+                // Update user data
+                var result = await repository.UpdateUserAsync(user);
+
+                if (!result)
+                {
+                    return NotFound(new { Message = "User not found" });
+                }
+
+                return Ok(new { Message = "User updated successfully" });
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(new { Message = "Invalid data provided", Details = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error updating user: {ex.Message}");
+
+                return StatusCode(500, new { Message = "An unexpected error occurred", Details = ex.Message });
+            }
         }
 
         [HttpPost]
