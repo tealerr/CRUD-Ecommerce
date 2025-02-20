@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Common.Repositories;
 using Common.Models;
+using Common.Request;
 
 namespace Admin.Controllers
 {
@@ -8,7 +9,6 @@ namespace Admin.Controllers
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
-        // POST: api/admin/products
         [HttpPost]
         [Route("products")]
         public IActionResult GetProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
@@ -35,7 +35,6 @@ namespace Admin.Controllers
             });
         }
 
-        // GET: api/admin/{productId}
         [HttpGet("{productId}")]
         public IActionResult GetProductByID(int productId)
         {
@@ -59,9 +58,8 @@ namespace Admin.Controllers
             });
         }
 
-        // PUT: api/admin/edit-product
         [HttpPut("edit-product")]
-        public async Task<IActionResult> UpdateProduct([FromBody] Product product)
+        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProduct product)
         {
             ProductRepositories repository = new();
 
@@ -75,10 +73,18 @@ namespace Admin.Controllers
             return Ok(new { Message = "Product updated successfully" });
         }
 
-        // DELETE: api/product/delete
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteProduct([FromQuery] int productId, sbyte IsDelete)
         {
+            if (productId <= 0)
+            {
+                return BadRequest("Product ID is required.");
+            }
+            if (IsDelete < 0 || IsDelete > 1)
+            {
+                return BadRequest("IsDelete must be 0 or 1.");
+            }
+
             ProductRepositories repository = new();
 
             var result = await repository.DeleteProduct(productId, IsDelete);

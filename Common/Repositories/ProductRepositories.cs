@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Common.Helper;
 using Common.Models;
+using Common.Request;
 using SqlKata.Execution;
 
 namespace Common.Repositories
@@ -72,22 +73,24 @@ namespace Common.Repositories
             }
         }
 
-        public async Task<bool> UpdateProduct(Product productToUpdate)
+        public async Task<bool> UpdateProduct(UpdateProduct productToUpdate)
         {
             try
             {
                 var connection = new DBConnection().Connect();
                 var productInfos = await connection.Query(Table.Product)
-                .Where(Column.ProductId, productToUpdate.Id)
-                .Where(Column.IsDelete, false)
+                .Where(Column.Id, productToUpdate.Id)
+                .Where(Column.IsDeleted, CodeHelper.FALSE)
                 .FirstOrDefaultAsync<Product>() ?? throw new Exception("Product not found");
 
                 Product updatedProduct = new()
                 {
-                    Name = productToUpdate.Name == "" ? productInfos.Name : productToUpdate.Name,
-                    Price = productToUpdate.Price == "" ? productInfos.Price : productToUpdate.Price,
-                    ImageUrl = productToUpdate.ImageUrl == "" ? productInfos.ImageUrl : productToUpdate.ImageUrl,
-                    IsDeleted = (sbyte)(productToUpdate.IsDeleted != 0 ? productInfos.IsDeleted : productToUpdate.IsDeleted),
+                    Id = productInfos.Id,
+                    Name = productToUpdate.Name == null || productToUpdate.Name == "" ? productInfos.Name : productToUpdate.Name,
+                    Price = productToUpdate.Price ?? productInfos.Price,
+                    ImageUrl = string.IsNullOrEmpty(productToUpdate.ImageUrl) ? productInfos.ImageUrl : productToUpdate.ImageUrl,
+                    IsDeleted = productInfos.IsDeleted,
+                    CreatedTime = productInfos.CreatedTime
                 };
 
                 // Apply update
@@ -114,12 +117,17 @@ namespace Common.Repositories
             {
                 var connection = new DBConnection().Connect();
                 var productInfos = await connection.Query(Table.Product)
-                .Where(Column.ProductId, productId)
-                .Where(Column.IsDelete, false)
+                .Where(Column.Id, productId)
+                .Where(Column.IsDeleted, false)
                 .FirstOrDefaultAsync<Product>() ?? throw new Exception("Product not found");
 
                 Product updatedProduct = new()
                 {
+                    Id = productInfos.Id,
+                    Name = productInfos.Name,
+                    Price = productInfos.Price,
+                    ImageUrl = productInfos.ImageUrl,
+                    CreatedTime = productInfos.CreatedTime,
                     IsDeleted = IsDelete
                 };
 
