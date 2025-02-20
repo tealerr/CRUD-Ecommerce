@@ -611,7 +611,7 @@
         public static readonly string UsedPoint = "used_point";
         public static readonly string IsDelete = "is_delete";
         public static readonly string IsDefault = "is_default";
-        public static readonly string IsDeleted = "is_deleted";
+        public static readonly string IsDeleted = "IsDeleted";
         public static readonly string ConsentUserId = "consent_user_id";
         public static readonly string IsConsent = "is_consent";
         public static readonly string ConsentStatus = "consent_status";

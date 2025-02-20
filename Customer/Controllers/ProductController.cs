@@ -34,9 +34,9 @@ namespace Customer.Controllers
         }
 
         [HttpGet("product/{productId}")]
-        public IActionResult GetProductByID(string productId)
+        public IActionResult GetProductByID(int productId)
         {
-            if (string.IsNullOrWhiteSpace(productId))
+            if (productId <= 0)
             {
                 return BadRequest("Product ID is required.");
             }

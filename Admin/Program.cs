@@ -1,7 +1,27 @@
+using MongoDB.Driver.Core.Configuration;
+using Microsoft.EntityFrameworkCore;
+using Common;
+using Common.Models;
+
 var builder = WebApplication.CreateBuilder(args);
+// Configure configuration sources
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())  // Not necessary since WebApplication handles this already.
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)   // Adds appsettings.json.
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)  // Adds environment-specific settings, e.g., appsettings.Development.json.
+    .AddEnvironmentVariables(); // Loads environment variables
+
+// Set the connection string
+ConnectionStrings.DefaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Add DbContext with MySQL configuration
+builder.Services.AddDbContext<EcommerceTestContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+});
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();

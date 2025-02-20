@@ -8,16 +8,17 @@ namespace Common.Repositories
     public class ProductRepositories
     {
 
-        public Product? GetProductByID(string productID)
+        public Product? GetProductByID(int productID)
         {
             try
             {
                 var connection = new DBConnection().Connect();
                 var productInfos = connection.Query(Table.Product)
-                                   .Where(Column.ProductId, productID)
-                                   .Where(Column.IsDelete, false)
-                                   .AsCount()
+                                   .Where(Column.Id, productID)
+                                   .Where(Column.IsDeleted, CodeHelper.FALSE)
                                    .FirstOrDefault<Product>();
+                Console.WriteLine("productInfos:: ", productInfos);
+
                 connection.Connection.Close();
 
                 if (productInfos == null)
@@ -42,28 +43,30 @@ namespace Common.Repositories
         {
             try
             {
-                using (var connection = new DBConnection().Connect())
+                var connection = new DBConnection().Connect();
+                var productList = connection.Query(Table.Product)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Where(Column.IsDeleted, CodeHelper.FALSE)
+                    .Get<Product>()
+                    .ToList();
+                connection.Connection.Close();
+
+                Console.WriteLine($"productList:: {productList}");
+
+                if (productList.Count == 0)
                 {
-                    var productList = connection.Query(Table.Product)
-                        .Skip((pageNumber - 1) * pageSize)
-                        .Take(pageSize)
-                        .Where(Column.IsDelete, false)
-                        .Get<Product>()
-                        .ToList();
-
-                    if (productList.Count == 0)
-                    {
-                        Debug.WriteLine("No products found.");
-                        return null;
-                    }
-
-                    return productList;
+                    Debug.WriteLine("No products found.");
+                    return null;
                 }
+
+                return productList;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error finding product list: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
+                Console.Error.WriteLine($"Error finding product list: {ex.Message}");
 
                 return null;
             }
