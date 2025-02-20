@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Common;
 using Common.Helper;
 using Common.Models;
+using Common.Request;
 using SqlKata.Execution;
 
 namespace Common.Repositories
@@ -58,25 +59,23 @@ namespace Common.Repositories
             }
         }
 
-        public async Task<bool> UpdateUserAsync(User user)
+        public async Task<bool> UpdateUserAsync(UpdateUser user)
         {
             try
             {
                 var connection = new DBConnection().Connect();
                 var userInfos = await connection.Query(Table.User)
                 .Where(Column.UserGuid, user.UserGuid)
-                .FirstOrDefaultAsync<User>();
+                .FirstOrDefaultAsync<User>() ?? throw new Exception("User not found.");
 
-                if (userInfos == null)
+                User updatedUserInfos = new()
                 {
-                    throw new Exception("User not found.");
-                }
-
-                User updatedUserInfos = new User
-                {
-                    Firstname = string.IsNullOrEmpty(user.Firstname) ? userInfos.Firstname : user.Firstname,
-                    Lastname = string.IsNullOrEmpty(user.Lastname) ? userInfos.Lastname : user.Lastname,
-                    Nickname = string.IsNullOrEmpty(user.Nickname) ? userInfos.Nickname : user.Nickname,
+                    Firstname = user.Firstname ?? userInfos.Firstname,
+                    Lastname = user.Lastname ?? userInfos.Lastname,
+                    Nickname = user.Nickname ?? userInfos.Nickname,
+                    CreatedTime = userInfos.CreatedTime,
+                    UserGuid = userInfos.UserGuid,
+                    Id = userInfos.Id
                 };
 
                 // Apply update

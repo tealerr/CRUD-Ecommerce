@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Common.Repositories;
-using Common.Models;
+using Common.Request;
 
 namespace Admin.Controllers
 {
@@ -37,9 +37,9 @@ namespace Admin.Controllers
 
         [HttpPut]
         [Route("update-user")]
-        public async Task<IActionResult> UpdateUser([FromBody] User user)
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUser user)
         {
-            UserRepositories repository = new UserRepositories();
+            UserRepositories repository = new();
 
             // update user data
             var result = await repository.UpdateUserAsync(user);
