@@ -103,11 +103,15 @@ namespace Common.Repositories
             }
         }
 
-        public static async Task<bool> SubmitTransaction(RequestSubmitTransaction transaction, int userTransactionId)
+        public static async Task<bool> SubmitTransaction(RequestSubmitTransaction transaction, int userTransactionId, string userGUID)
         {
             try
             {
-                using var scope = new TransactionScope();
+                var transactionOptions = new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted
+                };
+                using var scope = new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled);
                 using var connection = new DBConnection().Connect();
 
                 var newProductTransaction = new UserTransactionProduct
@@ -131,11 +135,11 @@ namespace Common.Repositories
 
                 if (result == 0)
                 {
-                    Console.Error.WriteLine("Failed to submit transaction.");
+                    Console.Error.WriteLine("Failed to insert user transaction.");
                     return false;
                 }
 
-                var deleteResult = await CartRepositories.RemoveItemFromCart(transaction.UserGUID, transaction.ProductId);
+                var deleteResult = await CartRepositories.RemoveItemFromCart(userGUID, transaction.ProductId);
                 if (!deleteResult)
                 {
                     Console.Error.WriteLine("Failed to remove item from cart.");

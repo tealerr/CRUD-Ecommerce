@@ -52,18 +52,38 @@ namespace Common.Repositories
             }
         }
 
-        public async Task<List<UserCartItem>?> GetUserItemInCart(string userGuid)
+        public async Task<List<ResponseItemsInCart>?> GetUserItemInCart(string userGuid)
         {
             try
             {
                 var connection = new DBConnection().Connect();
-                var result = await connection.Query(Table.UserCartItem)
+                var userCartItems = await connection.Query(Table.UserCartItem)
                     .Where("UserGuid", userGuid)
                     .GetAsync<UserCartItem>();
 
+                var products = await connection.Query(Table.Product)
+                    .Join(Table.UserCartItem, $"{Table.Product}.{Column.Id}", $"{Table.UserCartItem}.{Column.ProductId}")
+                    .Where($"{Table.UserCartItem}.{Column.UserGuid}", userGuid)
+                    .Where($"{Table.Product}.{Column.IsDeleted}", 0)
+                    .Select($"{Table.Product}.{Column.Id}", $"{Table.Product}.{Column.Name}", $"{Table.Product}.{Column.Price}", $"{Table.Product}.{Column.ImageUrl}")
+                    .GetAsync<Product>();
+
                 connection.Connection.Close();
 
-                return result.ToList();
+                var result = userCartItems.Join(products,
+                    cartItem => cartItem.ProductId,
+                    product => product.Id,
+                    (cartItem, product) => new ResponseItemsInCart
+                    {
+                        ProductId = product.Id,
+                        ProductName = product.Name,
+                        Price = product.Price,
+                        ImageUrl = product.ImageUrl,
+                        Quantity = cartItem.Quantity,
+                        Total = cartItem.Total
+                    }).ToList();
+
+                return result;
 
             }
             catch (Exception ex)

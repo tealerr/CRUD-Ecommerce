@@ -77,6 +77,11 @@ namespace Customer.Controllers
                 return BadRequest("Request body cannot be null.");
             }
 
+            if (string.IsNullOrEmpty(request.UserGUID))
+            {
+                return BadRequest("User GUID cannot be null or empty.");
+            }
+
             if (request.Transaction.Count == 0)
             {
                 return BadRequest("Transaction items cannot be null or empty.");
@@ -88,18 +93,8 @@ namespace Customer.Controllers
                 grandTotal += item.Total;
             }
 
-            var firstTransaction = request.Transaction.FirstOrDefault();
-            if (firstTransaction == null)
-            {
-                return BadRequest("No transactions found in the request.");
-            }
-            string userGUID = firstTransaction.UserGUID;
-            if (string.IsNullOrEmpty(userGUID))
-            {
-                return BadRequest("User GUID cannot be null or empty.");
-            }
 
-            int? userTransactionId = TransactionRepositories.CreateUserTransaction(userGUID, grandTotal);
+            int? userTransactionId = TransactionRepositories.CreateUserTransaction(request.UserGUID, grandTotal);
             if (userTransactionId == null)
             {
                 Console.Error.WriteLine("Failed to create user transaction.");
@@ -108,12 +103,7 @@ namespace Customer.Controllers
 
             foreach (var item in request.Transaction)
             {
-                if (string.IsNullOrEmpty(item.UserGUID))
-                {
-                    return BadRequest("User GUID cannot be null or empty.");
-                }
-
-                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value);
+                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value, request.UserGUID);
 
                 if (!result)
                 {

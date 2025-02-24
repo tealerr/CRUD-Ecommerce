@@ -829,7 +829,7 @@
         public static string IpstProductTypeId = "ipst_product_type_id";
         public static string ProductCustomFieldChoiceId = "product_custom_field_choice_id";
         public static string BarCode = "barcode";
-        public static string ImageUrl = "image_url";
+        public static string ImageUrl = "ImageUrl";
         public static string BrandId = "brand_id";
         public static string IsSerial = "is_serial";
         public static string Serial = "serial";
