@@ -1,30 +1,41 @@
 using System.Diagnostics;
 using Common.Helper;
 using Common.Models;
+using Common.Request;
 using SqlKata.Execution;
 
 namespace Common.Repositories
 {
     public class CartRepositories
     {
-        public async Task<bool> AddItemToCart(UserTransactionProduct newProduct)
+        public async Task<bool> AddItemToCart(RequestAddItemToCart item)
         {
             try
             {
-                int userTxProductId = Guid.NewGuid().GetHashCode();
+                var repository = new ProductRepositories();
 
-                UserTransactionProduct productToCart = new UserTransactionProduct
+                var product = repository.GetProductByID(item.ProductId) ?? throw new Exception("Product not found.");
+
+
+                UserCartItem productToCart = new()
                 {
-                    Id = newProduct.Id,
-                    UserTransactionId = userTxProductId,
-                    Quantity = newProduct.Quantity,
-                    Price = newProduct.Price,
-                    Total = (double)(newProduct.Quantity * newProduct.Price)
+                    ProductId = item.ProductId,
+                    UserGuid = item.UserGUID,
+                    Quantity = item.Quantity,
+                    Price = product.Price,
+                    Total = Math.Round(product.Price * item.Quantity, 2)
                 };
 
                 var connection = new DBConnection().Connect();
-                var result = await connection.Query(Table.UserTransactionProduct)
-                .InsertAsync(productToCart);
+                var result = await connection.Query(Table.UserCartItem)
+                .InsertAsync(new
+                {
+                    productToCart.UserGuid,
+                    productToCart.ProductId,
+                    productToCart.Price,
+                    productToCart.Quantity,
+                    productToCart.Total
+                });
                 connection.Connection.Close();
 
                 if (result > 0)
@@ -35,20 +46,42 @@ namespace Common.Repositories
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine(ex.StackTrace);
+                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(ex.StackTrace);
                 return false;
             }
         }
 
-        public async Task<bool> RemoveItemFromCart(int userTxId, int itemId)
+        public async Task<List<UserCartItem>?> GetUserItemInCart(string userGuid)
         {
             try
             {
                 var connection = new DBConnection().Connect();
-                var result = await connection.Query(Table.UserTransactionProduct)
-                    .Where("UserTransactionId", userTxId)
-                    .Where("Id", itemId)
+                var result = await connection.Query(Table.UserCartItem)
+                    .Where("UserGuid", userGuid)
+                    .GetAsync<UserCartItem>();
+
+                connection.Connection.Close();
+
+                return result.ToList();
+
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(ex.StackTrace);
+                return null;
+            }
+        }
+
+        public async Task<bool> RemoveItemFromCart(string userGUID, int productId)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = await connection.Query(Table.UserCartItem)
+                    .Where(Column.UserGuid, userGUID)
+                    .Where(Column.ProductId, productId)
                     .DeleteAsync();
                 connection.Connection.Close();
 
@@ -119,6 +152,55 @@ namespace Common.Repositories
                 Debug.WriteLine(ex.Message);
                 Debug.WriteLine(ex.StackTrace);
                 throw new Exception("Can not calculate total price of items in cart.");
+            }
+        }
+
+        public async Task<UserCartItem?> GetCartItemByProductId(string userGuid, int productId)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = await connection.Query(Table.UserCartItem)
+                    .Where("UserGuid", userGuid)
+                    .Where("ProductId", productId)
+                    .FirstOrDefaultAsync<UserCartItem>();
+
+                connection.Connection.Close();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdateCartItem(UserCartItem item)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+
+                var result = await connection.Query(Table.UserCartItem)
+                    .Where("UserGuid", item.UserGuid)
+                    .Where("ProductId", item.ProductId)
+                    .UpdateAsync(new
+                    {
+                        item.Quantity,
+                        Total = item.Price * item.Quantity
+                    });
+
+                connection.Connection.Close();
+
+                return result > 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return false;
             }
         }
     }

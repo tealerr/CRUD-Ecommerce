@@ -10,6 +10,7 @@ namespace Common.Helper
         public static readonly string Product = "Product";
         public static readonly string UserTransaction = "UserTransaction";
         public static readonly string UserTransactionProduct = "UserTransactionProduct";
+        public static readonly string UserCartItem = "UserCartItem";
 
     }
 }

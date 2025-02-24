@@ -33,7 +33,7 @@ namespace Common.Repositories
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error finding product with ID {productID}: {ex.Message}");
+                Console.Error.WriteLine($"Error finding product with ID {productID}: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
 
                 return null;

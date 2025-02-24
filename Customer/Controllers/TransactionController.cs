@@ -9,7 +9,7 @@ namespace Customer.Controllers
     [Route("api/[controller]")]
     public class TransactionController : ControllerBase
     {
-        [HttpGet("transaction/{transactionId}")]
+        [HttpGet("{transactionId}")]
         public IActionResult GetTransactionByID(int transactionId)
         {
             if (transactionId < 1)
@@ -17,7 +17,7 @@ namespace Customer.Controllers
                 return BadRequest("Transaction ID must be greater than zero.");
             }
 
-            TransactionRepositories repository = new TransactionRepositories();
+            TransactionRepositories repository = new();
 
             var transaction = repository.GetUserTransactionByID(transactionId);
 

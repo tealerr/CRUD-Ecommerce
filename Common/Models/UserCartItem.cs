@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Common.Models;
 
-public partial class UserTransactionProduct
+public partial class UserCartItem
 {
     public int Id { get; set; }
 
-    public int UserTransactionId { get; set; }
+    public string UserGuid { get; set; } = null!;
 
     public int ProductId { get; set; }
 

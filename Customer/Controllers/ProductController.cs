@@ -33,7 +33,7 @@ namespace Customer.Controllers
             });
         }
 
-        [HttpGet("product/{productId}")]
+        [HttpGet("{productId}")]
         public IActionResult GetProductByID(int productId)
         {
             if (productId <= 0)

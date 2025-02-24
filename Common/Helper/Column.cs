@@ -344,7 +344,7 @@
         public static readonly string Deleted = "deleted";
         public static readonly string DateUsed = "date_used";
         public static readonly string GroupBarCode = "group_barcode";
-        public static readonly string ProductId = "product_id";
+        public static readonly string ProductId = "ProductId";
         public static readonly string Point = "point";
         public static readonly string UserPointId = "user_point_id";
         public static readonly string PointBalance = "point_balance";

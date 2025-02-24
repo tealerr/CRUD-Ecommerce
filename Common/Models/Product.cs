@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Common.Models
+namespace Common.Models;
+
+public partial class Product
 {
-    public partial class Product
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string Name { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-        public double Price { get; set; }
+    public double Price { get; set; }
 
-        public string ImageUrl { get; set; } = null!;
+    public string ImageUrl { get; set; } = null!;
 
-        public sbyte IsDeleted { get; set; }
+    public sbyte IsDeleted { get; set; }
 
-        public DateTime CreatedTime { get; set; }
-    }
+    public DateTime CreatedTime { get; set; }
 }
