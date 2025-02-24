@@ -1,4 +1,3 @@
-using Common.Models;
 using Common.Repositories;
 using Common.Request;
 using Microsoft.AspNetCore.Mvc;
@@ -69,28 +68,70 @@ namespace Customer.Controllers
         }
 
         // POST: api/cart/submit
-        [HttpPost("submit")]
-        public async Task<IActionResult> Submit([FromBody] UserTransactionProduct item)
+        [HttpPost]
+        [Route("submit")]
+        public async Task<IActionResult> SubmitTransaction([FromBody] RequestSubmitTransactions request)
         {
-            CartRepositories repository = new();
+            if (request == null)
+            {
+                return BadRequest("Request body cannot be null.");
+            }
 
-            // var result = await repository.AddItemToCart(item);
+            if (request.Transaction.Count == 0)
+            {
+                return BadRequest("Transaction items cannot be null or empty.");
+            }
 
-            // if (!result)
-            // {
-            //     return BadRequest("Failed to add item to cart.");
-            // }
+            double grandTotal = 0;
+            foreach (var item in request.Transaction)
+            {
+                grandTotal += item.Total;
+            }
 
-            return Ok(new { results = "Item added to cart." });
+            var firstTransaction = request.Transaction.FirstOrDefault();
+            if (firstTransaction == null)
+            {
+                return BadRequest("No transactions found in the request.");
+            }
+            string userGUID = firstTransaction.UserGUID;
+            if (string.IsNullOrEmpty(userGUID))
+            {
+                return BadRequest("User GUID cannot be null or empty.");
+            }
+
+            int? userTransactionId = TransactionRepositories.CreateUserTransaction(userGUID, grandTotal);
+            if (userTransactionId == null)
+            {
+                Console.Error.WriteLine("Failed to create user transaction.");
+                return BadRequest("Failed to create user transaction.");
+            }
+
+            foreach (var item in request.Transaction)
+            {
+                if (string.IsNullOrEmpty(item.UserGUID))
+                {
+                    return BadRequest("User GUID cannot be null or empty.");
+                }
+
+                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value);
+
+                if (!result)
+                {
+                    return BadRequest("Failed to submit transaction.");
+                }
+            }
+
+            return Ok(new
+            {
+                results = "Transaction submitted successfully."
+            });
         }
 
         // delete item from cart
         [HttpDelete("delete-item")]
         public async Task<IActionResult> DeleteItem([FromQuery] string userGUID, int productId)
         {
-            CartRepositories repository = new();
-
-            var result = await repository.RemoveItemFromCart(userGUID, productId);
+            var result = await CartRepositories.RemoveItemFromCart(userGUID, productId);
 
             if (!result)
             {

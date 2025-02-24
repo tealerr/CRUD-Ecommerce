@@ -1,7 +1,5 @@
 using Common.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Customer.Controllers
 {
@@ -58,5 +56,6 @@ namespace Customer.Controllers
                 Transactions = transactions
             });
         }
+
     }
 }

@@ -74,7 +74,7 @@ namespace Common.Repositories
             }
         }
 
-        public async Task<bool> RemoveItemFromCart(string userGUID, int productId)
+        public static async Task<bool> RemoveItemFromCart(string userGUID, int productId)
         {
             try
             {

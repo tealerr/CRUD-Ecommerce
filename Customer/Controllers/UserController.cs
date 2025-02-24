@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Common.Models;
 using Common.Repositories;
 using Common.Request;
 namespace Customer.Controllers
