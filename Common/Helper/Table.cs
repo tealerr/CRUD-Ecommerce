@@ -11,6 +11,13 @@ namespace Common.Helper
         public static readonly string UserTransaction = "UserTransaction";
         public static readonly string UserTransactionProduct = "UserTransactionProduct";
         public static readonly string UserCartItem = "UserCartItem";
+        public static readonly string AspNetUserTokens = "AspNetUserTokens";
+        public static readonly string AspNetUsers = "AspNetUsers";
+        public static readonly string AdminSection = "admin_section";
+        public static readonly string Section = "section";
+        public static readonly string ActivityLog = "activity_log";
+        public static readonly string ActivityType = "activity_type";
+
 
     }
 }

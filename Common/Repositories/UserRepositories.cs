@@ -8,31 +8,6 @@ namespace Common.Repositories
 {
     public class UserRepositories
     {
-
-        public bool IsHaveExitingUser(string guid)
-        {
-            try
-            {
-                var connection = new DBConnection().Connect();
-                var result = connection.Query(Table.User)
-                                   .Where(Column.UserGuid, guid)
-                                   .AsCount()
-                                   .FirstOrDefault<int>();
-                connection.Connection.Close();
-                if (result > 0)
-                {
-                    return true;
-                }
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine(ex.StackTrace);
-                return true;
-            }
-        }
-
         public async Task<bool> AddUserAsync(RegisterUser user)
         {
             try
@@ -135,6 +110,75 @@ namespace Common.Repositories
                 Debug.WriteLine(ex.StackTrace);
 
                 return null;
+            }
+        }
+
+        public int GetStatusAspnetuserByEmail(string email)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = connection.Query(Table.AspNetUsers)
+                    .Select(Column.Enabled)
+                    .Where(Column.Email, email)
+                    .Get<int>().FirstOrDefault();
+                connection.Connection.Close();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return 0;
+            }
+        }
+
+        public int InsertAspnetusertokens(string userId, string loginProvider, string name, string value)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var insertObject = new
+                {
+                    UserId = userId,
+                    LoginProvider = loginProvider,
+                    Name = name,
+                    Value = value
+                };
+                var result = connection.Query(Table.AspNetUserTokens).InsertGetId<int>(insertObject);
+                connection.Connection.Close();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return 0;
+            }
+        }
+
+        public bool ValidateToken(string token)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = connection.Query(Table.AspNetUserTokens)
+                   .Select(Column.Value)
+                   .Where(Column.Value, token)
+                   .Get<string>()
+                   .FirstOrDefault();
+                connection.Connection.Close();
+                if (String.IsNullOrEmpty(result))
+                {
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return false;
             }
         }
     }

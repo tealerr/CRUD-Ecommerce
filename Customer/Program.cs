@@ -1,8 +1,9 @@
 using Common;
 using Common.Models;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Pomelo.EntityFrameworkCore.MySql.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Common.Handler;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 // Configure configuration sources
@@ -28,6 +29,24 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
+var apiKey = "CEGAChAtA7Ds40p";
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<IAuthorizationHandler, APIAuthorizationHandler>();
+builder.Services.AddTransient<IAuthorizationHandler, LoginAuthorizationHandler>();
+builder.Services.AddAuthorization(authConfig =>
+{
+    authConfig.AddPolicy("ApiPolicy",
+        policyBuilder => policyBuilder
+            .AddRequirements(new APIAuthorization(new[] { apiKey })));
+    authConfig.AddPolicy("LoginPolicy",
+        policyBuilder => policyBuilder
+            .AddRequirements(new LoginAuthorization(new[] { apiKey })));
+});
+// Add Identity services
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+                 .AddEntityFrameworkStores<EcommerceTestContext>()
+                 .AddDefaultTokenProviders();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -38,6 +57,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add the authentication middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 var summaries = new[]
 {

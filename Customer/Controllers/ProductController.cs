@@ -1,10 +1,12 @@
 using Common.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Customer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Policy = "ApiPolicy")]
     public class ProductController : ControllerBase
     {
         [HttpPost]

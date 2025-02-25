@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Common.Helper
+﻿namespace Common.Helper
 {
     public class CodeHelper
     {
