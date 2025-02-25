@@ -111,7 +111,7 @@ namespace Common.Repositories
             }
         }
 
-        public async Task<bool> DeleteProduct(int productId, sbyte IsDelete)
+        public async Task<bool> DeleteProduct(int productId, sbyte IsDelete = 1)
         {
             try
             {
@@ -145,6 +145,37 @@ namespace Common.Repositories
                 Debug.WriteLine($"Error updated product: {ex.Message}");
                 Debug.WriteLine(ex.StackTrace);
 
+                return false;
+            }
+        }
+
+        public static async Task<bool> AddProduct(Product product)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = await connection.Query(Table.Product)
+                .InsertAsync(new
+                {
+                    product.Name,
+                    product.Price,
+                    product.ImageUrl,
+                    product.IsDeleted,
+                    product.CreatedTime
+                });
+
+                connection.Connection.Close();
+
+                if (result > 0)
+                {
+                    return true;
+                }
+                throw new Exception("Product not added.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
                 return false;
             }
         }

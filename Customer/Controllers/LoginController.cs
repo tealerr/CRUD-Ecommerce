@@ -35,20 +35,12 @@ namespace Customer.Controllers
         {
             try
             {
-                # region Debug zone
                 var user = await _userManager.FindByEmailAsync(input.Email);
                 if (user == null)
                 {
                     return new BaseResponse().Fail(null, "InvalidUserPassword");
                 }
-                var resultPassword = await _userManager.CheckPasswordAsync(user, input.Password);
-                if (!resultPassword)
-                {
-                    return new BaseResponse().Fail(null, "InvalidUserPassword");
-                }
-                # endregion
 
-                var remoteIpAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
                 var result = await _signInManager.PasswordSignInAsync(user, input.Password, true, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
@@ -58,7 +50,6 @@ namespace Customer.Controllers
                         return new BaseResponse().Fail(null, "Username Cannot access this site");
                     }
 
-                    // var user = await _userManager.FindByNameAsync(input.Email);
                     if (user == null) return new BaseResponse().Fail(null, "InvalidUserPassword");
 
                     var role = await _userManager.GetRolesAsync(user);
@@ -114,11 +105,10 @@ namespace Customer.Controllers
         [HttpPost]
         [Route("logout")]
         [Authorize(Policy = "ApiPolicy")]
-        public async Task<ActionResult<dynamic>> LogoutAdmin()
+        public async Task<ActionResult<dynamic>> LogoutUser()
         {
             try
             {
-                var remoteIpAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
                 var context = new CodeHelperModel(HttpContext);
                 if (!string.IsNullOrEmpty(context.UserId))
                 {

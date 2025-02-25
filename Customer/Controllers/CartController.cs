@@ -10,7 +10,6 @@ namespace Customer.Controllers
     [Authorize(Policy = "LoginPolicy")]
     public class CartController : ControllerBase
     {
-
         [HttpPost("add-items")]
         public async Task<IActionResult> AddItemToCart([FromBody] RequestAddItemToCart item)
         {
@@ -94,7 +93,6 @@ namespace Customer.Controllers
             {
                 grandTotal += item.Total;
             }
-
 
             int? userTransactionId = TransactionRepositories.CreateUserTransaction(request.UserGUID, grandTotal);
             if (userTransactionId == null)

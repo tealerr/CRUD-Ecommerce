@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Common.Repositories;
 using Common.Models;
 using Common.Request;
+using Common.Helper;
 
 namespace Admin.Controllers
 {
@@ -58,6 +59,28 @@ namespace Admin.Controllers
             });
         }
 
+        [HttpPost("add-product")]
+        public async Task<IActionResult> AddProduct([FromBody] AddNewProduct product)
+        {
+            var newProduct = new Product
+            {
+                Name = product.Name,
+                Price = product.Price,
+                ImageUrl = product.ImageUrl ?? "",
+                IsDeleted = 0,
+                CreatedTime = DateTime.Now
+            };
+
+            var result = await ProductRepositories.AddProduct(newProduct);
+
+            if (!result)
+            {
+                return BadRequest(new { Message = "Can not add product" });
+            }
+
+            return Ok(new { Message = "Product added successfully" });
+        }
+
         [HttpPut("edit-product")]
         public async Task<IActionResult> UpdateProduct([FromBody] UpdateProduct product)
         {
@@ -74,20 +97,16 @@ namespace Admin.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteProduct([FromQuery] int productId, sbyte IsDelete)
+        public async Task<IActionResult> DeleteProduct([FromQuery] int productId)
         {
             if (productId <= 0)
             {
                 return BadRequest("Product ID is required.");
             }
-            if (IsDelete < 0 || IsDelete > 1)
-            {
-                return BadRequest("IsDelete must be 0 or 1.");
-            }
 
             ProductRepositories repository = new();
 
-            var result = await repository.DeleteProduct(productId, IsDelete);
+            var result = await repository.DeleteProduct(productId);
 
             if (!result)
             {
