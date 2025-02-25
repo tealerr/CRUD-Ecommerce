@@ -67,6 +67,56 @@ namespace Common.Repositories
             }
         }
 
+        public static List<TransactionResponse>? GetUserTransactionList(int pageNumber, int pageSize, string userGUID)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+
+                var transactions = connection.Query(Table.UserTransaction)
+                                    .Select($"{Table.UserTransaction}.{Column.Id} as UserTransactionId",
+                                            $"{Table.UserTransaction}.{Column.GrandTotal}",
+                                            $"{Table.UserTransaction}.{Column.CreatedTime}")
+                                    .Where($"{Table.UserTransaction}.{Column.UserGuid}", userGUID)
+                                    .Skip((pageNumber - 1) * pageSize)
+                                    .Take(pageSize)
+                                    .Get<TransactionResponse>()
+                                    .ToList();
+
+                if (transactions == null || transactions.Count == 0)
+                {
+                    Debug.WriteLine($"Transactions of User GUID: {userGUID} not found");
+                    connection.Connection.Close();
+                    return null;
+                }
+
+                foreach (var transaction in transactions)
+                {
+                    var transactionDetails = connection.Query(Table.UserTransactionProduct)
+                                        .Select($"{Table.Product}.{Column.Name} as ProductName",
+                                                $"{Table.Product}.{Column.Price} as ProductPrice",
+                                                $"{Table.UserTransactionProduct}.{Column.Quantity}",
+                                                $"{Table.UserTransactionProduct}.{Column.Total}")
+                                        .Join(Table.Product, $"{Table.Product}.Id", $"{Table.UserTransactionProduct}.ProductId")
+                                        .Where($"{Table.UserTransactionProduct}.UserTransactionId", transaction.UserTransactionId)
+                                        .Get<UserTransactionProductResponse>()
+                                        .ToList();
+
+                    transaction.TransactionDetails = transactionDetails;
+                }
+
+                connection.Connection.Close();
+                return transactions;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error finding transactions for User GUID: {userGUID}: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+
+                return null;
+            }
+        }
+
         public TransactionResponse? GetUserTransactionByID(int txId, string userGUID)
         {
             try

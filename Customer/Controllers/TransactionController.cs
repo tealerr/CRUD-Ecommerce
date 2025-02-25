@@ -62,7 +62,7 @@ namespace Customer.Controllers
         [HttpPost]
         [Route("transactions")]
         [Authorize(Policy = "ApiPolicy")]
-        public IActionResult GetTransactions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public IActionResult GetUserTransactions([FromHeader(Name = "Authorization")] string bearerToken, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             TransactionRepositories repository = new();
 
@@ -70,8 +70,33 @@ namespace Customer.Controllers
             {
                 return BadRequest("Page number and page size must be greater than zero.");
             }
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
 
-            var transactions = repository.GetTransactionList(pageNumber, pageSize);
+            var token = bearerToken["Bearer ".Length..].Trim();
+            var handler = new JwtSecurityTokenHandler();
+
+            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var userId = userIdClaim.Value;
+            var userInfos = UserRepositories.GetUserById(userId);
+            if (userInfos == null)
+            {
+                return NotFound($"User with ID '{userId}' not found.");
+            }
+
+            var transactions = TransactionRepositories.GetUserTransactionList(pageNumber, pageSize, userInfos.UserGuid);
 
             if (transactions == null || transactions.Count == 0)
             {
