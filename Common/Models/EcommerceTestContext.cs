@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Common.Models;
 
-public partial class EcommerceTestContext : DbContext
+public partial class EcommerceTestContext : IdentityDbContext
 {
     public EcommerceTestContext()
     {
@@ -43,6 +41,7 @@ public partial class EcommerceTestContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
@@ -120,7 +119,7 @@ public partial class EcommerceTestContext : DbContext
 
         modelBuilder.Entity<AspNetUserLogin>(entity =>
         {
-            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey })
+            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey, e.UserId }) // Add UserId to the primary key
                 .HasName("PRIMARY")
                 .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 

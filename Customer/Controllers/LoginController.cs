@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 
 namespace Customer.Controllers
 {
@@ -34,8 +35,21 @@ namespace Customer.Controllers
         {
             try
             {
+                # region Debug zone
+                var user = await _userManager.FindByEmailAsync(input.Email);
+                if (user == null)
+                {
+                    return new BaseResponse().Fail(null, "InvalidUserPassword");
+                }
+                var resultPassword = await _userManager.CheckPasswordAsync(user, input.Password);
+                if (!resultPassword)
+                {
+                    return new BaseResponse().Fail(null, "InvalidUserPassword");
+                }
+                # endregion
+
                 var remoteIpAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-                var result = await _signInManager.PasswordSignInAsync(input.Email, input.Password, true, lockoutOnFailure: true);
+                var result = await _signInManager.PasswordSignInAsync(user, input.Password, true, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     var status = new UserRepositories().GetStatusAspnetuserByEmail(input.Email);
@@ -44,7 +58,7 @@ namespace Customer.Controllers
                         return new BaseResponse().Fail(null, "Username Cannot access this site");
                     }
 
-                    var user = await _userManager.FindByNameAsync(input.Email);
+                    // var user = await _userManager.FindByNameAsync(input.Email);
                     if (user == null) return new BaseResponse().Fail(null, "InvalidUserPassword");
 
                     var role = await _userManager.GetRolesAsync(user);
@@ -70,10 +84,20 @@ namespace Customer.Controllers
                             Permission = permission,
                         });
                     }
-                    else
+
+                }
+                else
+                {
+                    Console.WriteLine("Failed to sign in.");
+                    if (result.IsLockedOut)
                     {
-                        return new BaseResponse().Fail(null, "InvalidUserPassword");
+                        return new BaseResponse().Fail("User account is locked out.");
                     }
+                    if (result.RequiresTwoFactor)
+                    {
+                        return new BaseResponse().Fail("Two-factor authentication required.");
+                    }
+                    return new BaseResponse().Fail(null, "InvalidUserPassword");
                 }
 
                 return new BaseResponse().Fail(null, "InvalidUserPassword");

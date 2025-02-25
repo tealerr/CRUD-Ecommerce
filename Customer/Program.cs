@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Common.Handler;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Common.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 // Configure configuration sources
@@ -18,6 +19,13 @@ ConnectionStrings.DefaultConnection = builder.Configuration.GetConnectionString(
 
 // Add DbContext with MySQL configuration
 builder.Services.AddDbContext<EcommerceTestContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+});
+
+// Add DbContext for ApplicationDbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
@@ -52,7 +60,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
 })
-.AddEntityFrameworkStores<EcommerceTestContext>()
+.AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 builder.Services.Configure<IdentityOptions>(options =>
 {
