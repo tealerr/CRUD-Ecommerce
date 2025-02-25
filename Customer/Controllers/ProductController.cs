@@ -43,9 +43,7 @@ namespace Customer.Controllers
                 return BadRequest("Product ID is required.");
             }
 
-            ProductRepositories repository = new();
-
-            var product = repository.GetProductByID(productId);
+            var product = ProductRepositories.GetProductByID(productId);
 
             if (product == null)
             {

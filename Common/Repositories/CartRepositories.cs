@@ -9,19 +9,16 @@ namespace Common.Repositories
 {
     public class CartRepositories
     {
-        public async Task<bool> AddItemToCart(RequestAddItemToCart item)
+        public async Task<bool> AddItemToCart(RequestAddItemToCart item, string userGuid)
         {
             try
             {
-                var repository = new ProductRepositories();
-
-                var product = repository.GetProductByID(item.ProductId) ?? throw new Exception("Product not found.");
-
+                var product = ProductRepositories.GetProductByID(item.ProductId) ?? throw new Exception("Product not found.");
 
                 UserCartItem productToCart = new()
                 {
                     ProductId = item.ProductId,
-                    UserGuid = item.UserGUID,
+                    UserGuid = userGuid,
                     Quantity = item.Quantity,
                     Price = product.Price,
                     Total = Math.Round(product.Price * item.Quantity, 2)
