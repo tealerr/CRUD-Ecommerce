@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Common.Repositories;
 using Common.Request;
 using Microsoft.AspNetCore.Authorization;
@@ -11,12 +12,38 @@ namespace Customer.Controllers
     public class CartController : ControllerBase
     {
         [HttpPost("add-items")]
-        public async Task<IActionResult> AddItemToCart([FromBody] RequestAddItemToCart item)
+        public async Task<IActionResult> AddItemToCart([FromBody] RequestAddItemToCart item, [FromHeader(Name = "Authorization")] string bearerToken)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var token = bearerToken["Bearer ".Length..].Trim();
+            var handler = new JwtSecurityTokenHandler();
+
+            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var userId = userIdClaim.Value;
+            var userInfos = UserRepositories.GetUserById(userId);
+            if (userInfos == null)
+            {
+                return NotFound($"User with ID '{userId}' not found.");
+            }
+
             CartRepositories repository = new();
 
             // Check if the item already exists in the cart
-            var existingItem = await repository.GetCartItemByProductId(item.UserGUID, item.ProductId);
+            var existingItem = await repository.GetCartItemByProductId(userInfos.UserGuid, item.ProductId);
 
             if (existingItem != null)
             {
@@ -46,12 +73,38 @@ namespace Customer.Controllers
             }
         }
 
-        [HttpGet("get-items/{userGuid}")]
-        public async Task<IActionResult> GetUserItemInCart(string userGuid)
+        [HttpGet("get-items")]
+        public async Task<IActionResult> GetUserItemInCart([FromHeader(Name = "Authorization")] string bearerToken)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var token = bearerToken["Bearer ".Length..].Trim();
+            var handler = new JwtSecurityTokenHandler();
+
+            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var userId = userIdClaim.Value;
+            var userInfos = UserRepositories.GetUserById(userId);
+            if (userInfos == null)
+            {
+                return NotFound($"User with ID '{userId}' not found.");
+            }
+
             CartRepositories repository = new();
 
-            var result = await repository.GetUserItemInCart(userGuid);
+            var result = await repository.GetUserItemInCart(userInfos.UserGuid);
 
             return Ok(new { results = result });
         }
@@ -71,16 +124,37 @@ namespace Customer.Controllers
         // POST: api/cart/submit
         [HttpPost]
         [Route("submit")]
-        public async Task<IActionResult> SubmitTransaction([FromBody] RequestSubmitTransactions request)
+        public async Task<IActionResult> SubmitTransaction([FromBody] RequestSubmitTransactions request, [FromHeader(Name = "Authorization")] string bearerToken)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var token = bearerToken["Bearer ".Length..].Trim();
+            var handler = new JwtSecurityTokenHandler();
+
+            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var userId = userIdClaim.Value;
+            var userInfos = UserRepositories.GetUserById(userId);
+            if (userInfos == null)
+            {
+                return NotFound($"User with ID '{userId}' not found.");
+            }
+
             if (request == null)
             {
                 return BadRequest("Request body cannot be null.");
-            }
-
-            if (string.IsNullOrEmpty(request.UserGUID))
-            {
-                return BadRequest("User GUID cannot be null or empty.");
             }
 
             if (request.Transaction.Count == 0)
@@ -91,10 +165,17 @@ namespace Customer.Controllers
             double grandTotal = 0;
             foreach (var item in request.Transaction)
             {
-                grandTotal += item.Total;
+                var product = ProductRepositories.GetProductByID(item.ProductId);
+                if (product == null)
+                {
+                    return NotFound($"Product with ID '{item.ProductId}' not found.");
+                }
+
+                double total = Math.Round(product.Price * item.Quantity, 2);
+                grandTotal += total;
             }
 
-            int? userTransactionId = TransactionRepositories.CreateUserTransaction(request.UserGUID, grandTotal);
+            int? userTransactionId = TransactionRepositories.CreateUserTransaction(userInfos.UserGuid, grandTotal);
             if (userTransactionId == null)
             {
                 Console.Error.WriteLine("Failed to create user transaction.");
@@ -103,7 +184,7 @@ namespace Customer.Controllers
 
             foreach (var item in request.Transaction)
             {
-                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value, request.UserGUID);
+                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value, userInfos.UserGuid);
 
                 if (!result)
                 {

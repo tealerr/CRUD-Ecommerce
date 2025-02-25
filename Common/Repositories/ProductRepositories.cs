@@ -9,7 +9,7 @@ namespace Common.Repositories
     public class ProductRepositories
     {
 
-        public Product? GetProductByID(int productID)
+        public static Product? GetProductByID(int productID)
         {
             try
             {

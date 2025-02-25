@@ -210,13 +210,19 @@ namespace Common.Repositories
                 using var scope = new TransactionScope(TransactionScopeOption.Required, transactionOptions, TransactionScopeAsyncFlowOption.Enabled);
                 using var connection = new DBConnection().Connect();
 
+                var product = ProductRepositories.GetProductByID(transaction.ProductId);
+                if (product == null)
+                {
+                    Console.Error.WriteLine($"Product with ID '{transaction.ProductId}' not found.");
+                    return false;
+                }
                 var newProductTransaction = new UserTransactionProduct
                 {
                     UserTransactionId = userTransactionId,
                     ProductId = transaction.ProductId,
-                    Price = transaction.Price,
+                    Price = product.Price,
                     Quantity = transaction.Quantity,
-                    Total = Math.Round(transaction.Price * transaction.Quantity, 2)
+                    Total = Math.Round(product.Price * transaction.Quantity, 2)
                 };
 
                 var result = await connection.Query(Table.UserTransactionProduct)
