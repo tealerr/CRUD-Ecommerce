@@ -1,6 +1,8 @@
 using Common.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace Customer.Controllers
 {
@@ -9,17 +11,42 @@ namespace Customer.Controllers
     public class TransactionController : ControllerBase
     {
         [HttpGet("{transactionId}")]
-        [Authorize(Policy = "ApiPolicy")]
-        public IActionResult GetTransactionByID(int transactionId)
+        [Authorize(Policy = "LoginPolicy")]
+        public IActionResult GetUserTransactionByID(int transactionId, [FromHeader(Name = "Authorization")] string bearerToken)
         {
             if (transactionId < 1)
             {
                 return BadRequest("Transaction ID must be greater than zero.");
             }
 
-            TransactionRepositories repository = new();
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
 
-            var transaction = repository.GetUserTransactionByID(transactionId);
+            var token = bearerToken["Bearer ".Length..].Trim();
+            var handler = new JwtSecurityTokenHandler();
+
+            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
+            {
+                return Unauthorized("Invalid token.");
+            }
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var userId = userIdClaim.Value;
+            var userInfos = UserRepositories.GetUserById(userId);
+            if (userInfos == null)
+            {
+                return NotFound($"User with ID '{userId}' not found.");
+            }
+
+            TransactionRepositories repository = new();
+            var transaction = repository.GetUserTransactionByID(transactionId, userInfos.UserGuid);
 
             if (transaction == null)
             {
@@ -28,7 +55,7 @@ namespace Customer.Controllers
 
             return Ok(new
             {
-                results = transaction
+                Results = transaction
             });
         }
 

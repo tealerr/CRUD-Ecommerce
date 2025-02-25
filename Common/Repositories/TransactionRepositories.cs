@@ -3,6 +3,7 @@ using System.Transactions;
 using Common.Helper;
 using Common.Models;
 using Common.Request;
+using Common.Responses;
 using SqlKata.Execution;
 
 namespace Common.Repositories
@@ -39,7 +40,7 @@ namespace Common.Repositories
             }
         }
 
-        public UserTransaction? GetUserTransactionByID(int txId)
+        public UserTransaction? GetAllUserTransactionByID(int txId)
         {
             try
             {
@@ -54,6 +55,51 @@ namespace Common.Repositories
                     Debug.WriteLine($"Transaction with ID: {txId} not found");
                     return null;
                 }
+
+                return transaction;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error finding transaction with ID: {txId}: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+
+                return null;
+            }
+        }
+
+        public TransactionResponse? GetUserTransactionByID(int txId, string userGUID)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+
+                var transaction = connection.Query(Table.UserTransaction)
+                                    .Select($"{Table.UserTransaction}.{Column.Id} as UserTransactionId",
+                                            $"{Table.UserTransaction}.{Column.GrandTotal}",
+                                            $"{Table.UserTransaction}.{Column.CreatedTime}")
+                                    .Where($"{Table.UserTransaction}.{Column.Id}", txId)
+                                    .Where($"{Table.UserTransaction}.{Column.UserGuid}", userGUID)
+                                    .FirstOrDefault<TransactionResponse>();
+
+                if (transaction == null)
+                {
+                    Debug.WriteLine($"Transaction with ID: {txId} not found");
+                    connection.Connection.Close();
+                    return null;
+                }
+
+                var transactionDetails = connection.Query(Table.UserTransactionProduct)
+                                        .Select($"{Table.Product}.{Column.Name} as ProductName",
+                                                $"{Table.Product}.{Column.Price} as ProductPrice",
+                                                $"{Table.UserTransactionProduct}.{Column.Quantity}",
+                                                $"{Table.UserTransactionProduct}.{Column.Total}")
+                                        .Join(Table.Product, $"{Table.Product}.{Column.Id}", $"{Table.UserTransactionProduct}.{Column.ProductId}")
+                                        .Where($"{Table.UserTransactionProduct}.UserTransactionId", txId)
+                                        .Get<UserTransactionProductResponse>()
+                                        .ToList();
+
+                transaction.TransactionDetails = transactionDetails;
+                connection.Connection.Close();
 
                 return transaction;
             }

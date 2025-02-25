@@ -50,7 +50,7 @@ namespace Admin.Controllers
 
             TransactionRepositories repository = new();
 
-            var transaction = repository.GetUserTransactionByID(transactionId);
+            var transaction = repository.GetAllUserTransactionByID(transactionId);
 
             if (transaction == null)
             {

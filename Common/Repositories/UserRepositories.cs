@@ -113,6 +113,33 @@ namespace Common.Repositories
             }
         }
 
+        public static User? GetUserById(string userId)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var user = connection.Query(Table.User)
+                    .Where(Column.Id, userId)
+                    .FirstOrDefault<User>();
+                connection.Connection.Close();
+
+                if (user == null)
+                {
+                    Debug.WriteLine($"User with ID: {userId} not found");
+                    return null;
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error finding user with ID: {userId}: {ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+
+                return null;
+            }
+        }
+
         public int GetStatusAspnetuserByEmail(string email)
         {
             try

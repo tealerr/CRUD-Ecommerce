@@ -1,4 +1,4 @@
-namespace Common.Request
+namespace Common.Responses
 {
     public class ResponseItemsInCart
     {

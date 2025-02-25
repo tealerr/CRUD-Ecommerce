@@ -19,7 +19,7 @@
         public static readonly string RichMenuId = "rich_menu_id";
         public static readonly string ShippingGroupId = "shipping_group_id";
         public static readonly string ShippingMethodId = "shipping_method_id";
-        public static readonly string Id = "id";
+        public static readonly string Id = "Id";
         public static readonly string ColumnDB = "column_db";
         public static readonly string ColumnCache = "column_cache";
         public static readonly string TicketWebhookActionId = "ticket_webhook_action_id";
@@ -147,7 +147,7 @@
         public static readonly string Minute = "minute";
         public static readonly string FetchTime = "fetch_time";
         public static readonly string IsUpdate = "is_update";
-        public static readonly string Total = "total";
+        public static readonly string Total = "Total";
         public static readonly string UserLifeCycleTypeId = "user_life_cycle_type_id";
         public static readonly string ReportLifeCycleTypeId = "report_life_cycle_type_id";
         public static readonly string IsDisplay = "is_display";
@@ -242,7 +242,7 @@
         public static readonly string IsSetMemberTier = "is_set_member_tier";
         public static readonly string MessageSegmentationId = "message_segmentation_id";
         public static readonly string ExpiredAfterRedeem = "expired_after_redeem";
-        public static readonly string CreatedTime = "created_time";
+        public static readonly string CreatedTime = "CreatedTime";
         public static readonly string IsSend = "is_send";
         public static readonly string MessageId = "message_id";
         public static readonly string ImageMapId = "image_map_id";
@@ -301,9 +301,9 @@
         public static readonly string SubText = "sub_text";
         public static readonly string InvoiceNo = "invoice_no";
         public static readonly string SalesNo = "sales_no";
-        public static readonly string GrandTotal = "grand_total";
+        public static readonly string GrandTotal = "GrandTotal";
         public static readonly string Gift = "gift";
-        public static readonly string Name = "name";
+        public static readonly string Name = "Name";
         public static readonly string NameTh = "name_th";
         public static readonly string DialCode = "dial_code";
         public static readonly string NickName = "nickname";
@@ -365,9 +365,9 @@
         public static readonly string Ah2Name = "ah_2_name";
         public static readonly string Ah3Name = "ah_3_name";
         public static readonly string Ah4Name = "ah_4_name";
-        public static readonly string Price = "price";
+        public static readonly string Price = "Price";
         public static readonly string PerPrice = "per_price";
-        public static readonly string Quantity = "quantity";
+        public static readonly string Quantity = "Quantity";
         public static readonly string QuantityTransfered = "quantity_transfered";
         public static readonly string AfterDiscountPrice = "after_discount_price";
         public static readonly string ValidFrom = "valid_from";
