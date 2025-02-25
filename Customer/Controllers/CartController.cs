@@ -1,11 +1,13 @@
 using Common.Repositories;
 using Common.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Customer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Policy = "LoginPolicy")]
     public class CartController : ControllerBase
     {
 

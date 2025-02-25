@@ -13,7 +13,7 @@ namespace Customer.Controllers
         [Route("products")]
         public IActionResult GetProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            ProductRepositories repository = new ProductRepositories();
+            ProductRepositories repository = new();
 
             if (pageNumber < 1 || pageSize < 1)
             {
@@ -43,7 +43,7 @@ namespace Customer.Controllers
                 return BadRequest("Product ID is required.");
             }
 
-            ProductRepositories repository = new ProductRepositories();
+            ProductRepositories repository = new();
 
             var product = repository.GetProductByID(productId);
 

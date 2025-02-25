@@ -1,4 +1,5 @@
 using Common.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Customer.Controllers
@@ -8,6 +9,7 @@ namespace Customer.Controllers
     public class TransactionController : ControllerBase
     {
         [HttpGet("{transactionId}")]
+        [Authorize(Policy = "ApiPolicy")]
         public IActionResult GetTransactionByID(int transactionId)
         {
             if (transactionId < 1)
@@ -32,6 +34,7 @@ namespace Customer.Controllers
 
         [HttpPost]
         [Route("transactions")]
+        [Authorize(Policy = "ApiPolicy")]
         public IActionResult GetTransactions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             TransactionRepositories repository = new();

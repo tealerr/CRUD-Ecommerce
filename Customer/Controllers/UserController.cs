@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Common.Repositories;
 using Common.Request;
+using Microsoft.AspNetCore.Authorization;
 namespace Customer.Controllers
 {
     [ApiController]
@@ -11,6 +12,7 @@ namespace Customer.Controllers
         // POST: register user
         [HttpPost]
         [Route("register")]
+        [Authorize(Policy = "ApiPolicy")]
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
             UserRepositories repository = new();
@@ -27,6 +29,7 @@ namespace Customer.Controllers
 
         [HttpPut]
         [Route("update-infos")]
+        [Authorize(Policy = "LoginPolicy")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUser user)
         {
             try
@@ -54,19 +57,5 @@ namespace Customer.Controllers
                 return StatusCode(500, new { Message = "An unexpected error occurred", Details = ex.Message });
             }
         }
-
-        [HttpPost]
-        public IActionResult Login()
-        {
-            // This is just a placeholder. Replace with actual logic to update a user.
-            return NoContent();
-        }
-
-        [HttpPost]
-        public IActionResult Logout()
-        {
-            return NoContent();
-        }
-
     }
 }
