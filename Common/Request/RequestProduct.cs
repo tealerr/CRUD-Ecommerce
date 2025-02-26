@@ -1,4 +1,6 @@
 
+using Microsoft.AspNetCore.Http;
+
 namespace Common.Request
 {
     public class UpdateProduct
@@ -13,7 +15,7 @@ namespace Common.Request
     {
         public required string Name { get; set; }
         public required double Price { get; set; }
-        public string? ImageUrl { get; set; }
+        public required IFormFile Image { get; set; }
     }
 }
 
