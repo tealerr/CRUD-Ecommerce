@@ -8,17 +8,16 @@ namespace Common.Repositories
 {
     public class UserRepositories
     {
-        public async Task<bool> AddUserAsync(RegisterUser user)
+        public async Task<bool> AddUserAsync(RegisterUser user, string UserGuid)
         {
             try
             {
-                string newUserGuid = GuidHelper.GenerateGuid();
                 var newUser = new User
                 {
                     Firstname = user.Firstname,
                     Lastname = user.Lastname,
                     Nickname = user.Nickname,
-                    UserGuid = newUserGuid,
+                    UserGuid = UserGuid,
                     CreatedTime = DateTime.Now
                 };
 

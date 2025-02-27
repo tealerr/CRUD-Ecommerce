@@ -6,13 +6,12 @@ namespace Common.Models
 {
     public class ActivityLogModel
     {
-        public string display_name { get; set; }
-        public string ip_address { get; set; }
-        public string activity { get; set; }
-        public int activity_type_id { get; set; }
-        public string target { get; set; }
-        public DateTime created_time { get; set; }
-        public string detail { get; set; }
-
+        public string Display_name { get; set; } = string.Empty;
+        public string Ip_address { get; set; } = string.Empty;
+        public string Activity { get; set; } = string.Empty;
+        public int Activity_type_id { get; set; }
+        public string Target { get; set; } = string.Empty;
+        public DateTime Created_time { get; set; }
+        public string Detail { get; set; } = string.Empty;
     }
 }

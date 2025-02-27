@@ -1,8 +1,7 @@
+using Common.Helper;
 using Common.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 
 namespace Customer.Controllers
 {
@@ -24,29 +23,14 @@ namespace Customer.Controllers
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
 
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
-            }
-
             TransactionRepositories repository = new();
-            var transaction = repository.GetUserTransactionByID(transactionId, userInfos.UserGuid);
+            var transaction = repository.GetUserTransactionByID(transactionId, userGuid);
 
             if (transaction == null)
             {
@@ -70,33 +54,19 @@ namespace Customer.Controllers
             {
                 return BadRequest("Page number and page size must be greater than zero.");
             }
+
             if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
             {
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
 
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
-            }
-
-            var transactions = TransactionRepositories.GetUserTransactionList(pageNumber, pageSize, userInfos.UserGuid);
+            var transactions = TransactionRepositories.GetUserTransactionList(pageNumber, pageSize, userGuid);
 
             if (transactions == null || transactions.Count == 0)
             {

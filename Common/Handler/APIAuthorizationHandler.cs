@@ -45,19 +45,21 @@ namespace Common.Handler
                     var unauthorized = new BaseResponse().Fail(null, MessageHelper.API_KEY_UNAUTHORIZED);
 
                     var filterContext = context.Resource as DefaultHttpContext;
-                    var response = filterContext.Response;
-
-                    var json = Newtonsoft.Json.JsonConvert.SerializeObject(unauthorized);
-                    var message = Encoding.UTF8.GetBytes(json);
-
-                    context.Fail();
-                    response.OnStarting(() =>
+                    if (filterContext != null)
                     {
-                        filterContext.Response.StatusCode = 401;
-                        return Task.CompletedTask;
-                    });
-                    response.ContentType = "application/json";
-                    _ = response.Body.WriteAsync(message, 0, message.Length);
+                        var response = filterContext.Response;
+                        var json = Newtonsoft.Json.JsonConvert.SerializeObject(unauthorized);
+                        var message = Encoding.UTF8.GetBytes(json);
+
+                        context.Fail();
+                        response.OnStarting(() =>
+                        {
+                            filterContext.Response.StatusCode = 401;
+                            return Task.CompletedTask;
+                        });
+                        response.ContentType = "application/json";
+                        _ = response.Body.WriteAsync(message, 0, message.Length);
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+using Common.Helper;
 using Common.Repositories;
 using Common.Request;
 using Microsoft.AspNetCore.Authorization;
@@ -19,30 +19,15 @@ namespace Customer.Controllers
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
 
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
-            }
-
             CartRepositories repository = new();
 
-            var existingItem = await repository.GetCartItemByProductId(userInfos.UserGuid, item.ProductId);
+            var existingItem = await repository.GetCartItemByProductId(userGuid, item.ProductId);
             if (existingItem != null)
             {
                 existingItem.Quantity += item.Quantity;
@@ -57,7 +42,7 @@ namespace Customer.Controllers
                 return Ok(new { results = "Item quantity updated in cart." });
             }
 
-            var result = await repository.AddItemToCart(item, userInfos.UserGuid);
+            var result = await repository.AddItemToCart(item, userGuid);
 
             if (!result)
             {
@@ -76,30 +61,15 @@ namespace Customer.Controllers
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
 
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
-            }
-
             CartRepositories repository = new();
 
-            var existingItem = await repository.GetCartItemByProductId(userInfos.UserGuid, item.ProductId);
+            var existingItem = await repository.GetCartItemByProductId(userGuid, item.ProductId);
 
             if (existingItem != null)
             {
@@ -128,30 +98,15 @@ namespace Customer.Controllers
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
 
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
-            }
-
             CartRepositories repository = new();
 
-            var result = await repository.GetUserItemInCart(userInfos.UserGuid);
+            var result = await repository.GetUserItemInCart(userGuid);
 
             return Ok(new { results = result });
         }
@@ -178,25 +133,10 @@ namespace Customer.Controllers
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
-            }
-
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
             }
 
             if (request == null)
@@ -222,7 +162,7 @@ namespace Customer.Controllers
                 grandTotal += total;
             }
 
-            int? userTransactionId = TransactionRepositories.CreateUserTransaction(userInfos.UserGuid, grandTotal);
+            int? userTransactionId = TransactionRepositories.CreateUserTransaction(userGuid, grandTotal);
             if (userTransactionId == null)
             {
                 Console.Error.WriteLine("Failed to create user transaction.");
@@ -231,7 +171,7 @@ namespace Customer.Controllers
 
             foreach (var item in request.Transaction)
             {
-                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value, userInfos.UserGuid);
+                var result = await TransactionRepositories.SubmitTransaction(item, userTransactionId.Value, userGuid);
 
                 if (!result)
                 {
@@ -254,27 +194,13 @@ namespace Customer.Controllers
                 return Unauthorized("Invalid or missing token.");
             }
 
-            var token = bearerToken["Bearer ".Length..].Trim();
-            var handler = new JwtSecurityTokenHandler();
-
-            if (handler.ReadToken(token) is not JwtSecurityToken jwtToken)
-            {
-                return Unauthorized("Invalid token.");
-            }
-
-            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
-            if (userIdClaim == null)
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
 
-            var userId = userIdClaim.Value;
-            var userInfos = UserRepositories.GetUserById(userId);
-            if (userInfos == null)
-            {
-                return NotFound($"User with ID '{userId}' not found.");
-            }
-            var result = await CartRepositories.RemoveItemFromCart(userInfos.UserGuid, productId);
+            var result = await CartRepositories.RemoveItemFromCart(userGuid, productId);
 
             if (!result)
             {
