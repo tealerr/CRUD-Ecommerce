@@ -194,11 +194,59 @@ namespace Common.Repositories
                    .Get<string>()
                    .FirstOrDefault();
                 connection.Connection.Close();
-                if (String.IsNullOrEmpty(result))
+                if (string.IsNullOrEmpty(result))
                 {
                     return false;
                 }
                 return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return false;
+            }
+        }
+
+        public static string? GetUserToken(string token)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = connection.Query(Table.AspNetUserTokens)
+                   .Select(Column.Value)
+                   .Where(Column.Value, token)
+                   .Get<string>()
+                   .FirstOrDefault();
+                connection.Connection.Close();
+                if (string.IsNullOrEmpty(result) && result != null)
+                {
+                    return result;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine(ex.StackTrace);
+                return null;
+            }
+        }
+
+        public static bool RemoveToken(string token)
+        {
+            try
+            {
+                var connection = new DBConnection().Connect();
+                var result = connection.Query(Table.AspNetUserTokens)
+                   .Where(Column.Value, token)
+                   .Delete();
+                connection.Connection.Close();
+                if (result > 0)
+                {
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex)
             {

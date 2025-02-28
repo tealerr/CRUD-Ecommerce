@@ -115,8 +115,8 @@ namespace Customer.Controllers
                     var user = await _userManager.FindByIdAsync(context.UserId);
                     if (user != null)
                     {
+                        UserRepositories.RemoveToken(context.Token);
                         await HttpContext.SignOutAsync();
-
                         return new BaseResponse().Success("Logout Success");
                     }
                 }

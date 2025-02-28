@@ -34,19 +34,12 @@ namespace Admin.Controllers
                 {
                     try
                     {
-                        string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", $"{product.Id}.png");
-
-                        if (!System.IO.File.Exists(filePath))
-                        {
-                            byte[] imageBytes = Convert.FromBase64String(product.ImageUrl);
-                            System.IO.File.WriteAllBytes(filePath, imageBytes);
-                        }
-
-                        product.ImageUrl = ImageHelper.GetImageUrlFromPath(filePath);
+                        string imageUrl = ImageHelper.GetImageUrl(product.ImageUrl, HttpContext);
+                        product.ImageUrl = imageUrl;
                     }
-                    catch (FormatException ex)
+                    catch (Exception ex)
                     {
-                        Console.WriteLine($"Error decoding Base64 for product {product.Id}: {ex.Message}");
+                        Console.WriteLine($"Error generating image URL for product {product.Id}: {ex.Message}");
                         product.ImageUrl = "";
                     }
                 }
@@ -80,27 +73,12 @@ namespace Admin.Controllers
             {
                 try
                 {
-                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", $"{product.Id}.png");
-                    if (ReadFileHelper.IsValidBase64(product.ImageUrl))
-                    {
-                        if (!System.IO.File.Exists(filePath))
-                        {
-                            byte[] imageBytes = Convert.FromBase64String(product.ImageUrl);
-                            System.IO.File.WriteAllBytes(filePath, imageBytes);
-                        }
-
-                        product.ImageUrl = ImageHelper.GetImageUrlFromPath(filePath);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Invalid Base64 format for product {product.Id}");
-                        product.ImageUrl = "";
-                    }
-
+                    string imageUrl = ImageHelper.GetImageUrl(product.ImageUrl, HttpContext);
+                    product.ImageUrl = imageUrl;
                 }
-                catch (FormatException ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Error decoding Base64 for product {product.Id}: {ex.Message}");
+                    Console.WriteLine($"Error generating image URL for product {product.Id}: {ex.Message}");
                     product.ImageUrl = "";
                 }
             }
@@ -115,6 +93,7 @@ namespace Admin.Controllers
         public async Task<IActionResult> AddProduct([FromForm] AddNewProduct product)
         {
             string base64String = "";
+            string savedImagePath = "";
 
             if (product.Image != null)
             {
@@ -126,10 +105,19 @@ namespace Admin.Controllers
                 if (imageBytes.Length > 0)
                 {
                     string fileExtension = Path.GetExtension(product.Image.FileName).ToLower();
-
-                    if (fileExtension == ".png" || fileExtension == ".jpg" || fileExtension == ".jpeg")
+                    if (fileExtension == ".png")
+                    {
+                        savedImagePath = ImageHelper.SaveImage(base64String, "/Uploads", ImageHelper.FileType.Png);
+                    }
+                    else if (fileExtension == ".jpg")
                     {
                         base64String = Convert.ToBase64String(imageBytes);
+                        savedImagePath = ImageHelper.SaveImage(base64String, "/Uploads", ImageHelper.FileType.JPeg);
+                    }
+                    else if (fileExtension == ".jpeg")
+                    {
+                        base64String = Convert.ToBase64String(imageBytes);
+                        savedImagePath = ImageHelper.SaveImage(base64String, "/Uploads", ImageHelper.FileType.JPeg);
                     }
                     else
                     {
@@ -146,7 +134,7 @@ namespace Admin.Controllers
             {
                 Name = product.Name,
                 Price = product.Price,
-                ImageUrl = base64String,
+                ImageUrl = savedImagePath,
                 IsDeleted = 0,
                 CreatedTime = DateTime.Now
             };
@@ -196,4 +184,6 @@ namespace Admin.Controllers
             return Ok(new { Message = "Product deleted successfully" });
         }
     }
+
 }
+

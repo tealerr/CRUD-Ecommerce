@@ -52,7 +52,6 @@ namespace Customer.Controllers
             return Ok(new { results = "Item added to cart." });
         }
 
-
         [HttpPut("update-items")]
         public async Task<IActionResult> UpdateItemInCart([FromBody] RequestAddItemToCart item, [FromHeader(Name = "Authorization")] string bearerToken)
         {

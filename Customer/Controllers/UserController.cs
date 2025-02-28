@@ -31,7 +31,7 @@ namespace Customer.Controllers
 
             if (existingUser != null)
             {
-                return Ok(new BaseResponse().Success("User already exists"));
+                return BadRequest(new BaseResponse().Fail("User already exists"));
             }
             UserRepositories repository = new();
 
