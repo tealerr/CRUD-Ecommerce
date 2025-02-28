@@ -219,7 +219,7 @@ namespace Common.Repositories
                    .Get<string>()
                    .FirstOrDefault();
                 connection.Connection.Close();
-                if (string.IsNullOrEmpty(result) && result != null)
+                if (!string.IsNullOrEmpty(result))
                 {
                     return result;
                 }

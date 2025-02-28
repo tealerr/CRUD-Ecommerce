@@ -113,7 +113,12 @@ namespace Admin.Controllers
                     var user = await _userManager.FindByIdAsync(context.UserId);
                     if (user != null)
                     {
-                        UserRepositories.RemoveToken(context.Token);
+                        var result = UserRepositories.RemoveToken(context.Token);
+                        if (!result)
+                        {
+                            return new BaseResponse().Fail("Logout Failed");
+                        }
+
                         await HttpContext.SignOutAsync();
                         return new BaseResponse().Success("Logout Success");
                     }

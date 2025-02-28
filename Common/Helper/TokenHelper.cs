@@ -1,4 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Threading.Tasks;
+using Common.Repositories;
 
 namespace Common.Helper
 {
@@ -16,6 +18,13 @@ namespace Common.Helper
                 return null;
             }
 
+            var isHaveUserToken = UserRepositories.GetUserToken(token);
+            if (isHaveUserToken == null)
+            {
+                Console.Error.WriteLine("Token not found in database.");
+                return null;
+            }
+
             var userGuidClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
             if (userGuidClaim == null)
             {
@@ -26,7 +35,9 @@ namespace Common.Helper
             return userGuidClaim.Value;
         }
     }
-
-
-
 }
+
+
+
+
+
