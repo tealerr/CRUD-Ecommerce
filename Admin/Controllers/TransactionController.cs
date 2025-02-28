@@ -1,7 +1,8 @@
+using Common.Helper;
 using Common.Repositories;
+using Common.Responses;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Admin.Controllers
 {
@@ -9,9 +10,42 @@ namespace Admin.Controllers
     [Route("api/[controller]")]
     public class TransactionController : ControllerBase
     {
-        [HttpPost("transactions")]
-        public IActionResult GetTransactions([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        private readonly UserManager<IdentityUser> _userManagerService;
+
+        public TransactionController(UserManager<IdentityUser> userManagerService)
         {
+            _userManagerService = userManagerService;
+        }
+
+        [HttpPost("transactions")]
+        public async Task<IActionResult> GetTransactions(
+        [FromHeader(Name = "Authorization")] string bearerToken,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+        {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
 
             TransactionRepositories repository = new();
 
@@ -36,8 +70,34 @@ namespace Admin.Controllers
         }
 
         [HttpGet("{transactionId}")]
-        public IActionResult GetTransactionByID(int transactionId)
+        public async Task<IActionResult> GetTransactionByID(
+        [FromHeader(Name = "Authorization")] string bearerToken,
+        int transactionId)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
+
             if (transactionId.GetType() != typeof(int))
             {
                 return BadRequest("Transaction ID must be an integer.");

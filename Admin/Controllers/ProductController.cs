@@ -4,6 +4,7 @@ using Common.Models;
 using Common.Request;
 using Common.Helper;
 using SixLabors.ImageSharp;
+using Microsoft.AspNetCore.Identity;
 
 namespace Admin.Controllers
 {
@@ -11,10 +12,44 @@ namespace Admin.Controllers
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
+        private readonly UserManager<IdentityUser> _userManagerService;
+
+        public ProductController(UserManager<IdentityUser> userManagerService)
+        {
+            _userManagerService = userManagerService;
+        }
+
         [HttpPost]
         [Route("products")]
-        public IActionResult GetProducts([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetProducts(
+        [FromHeader(Name = "Authorization")] string bearerToken,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
+
             ProductRepositories repository = new();
 
             if (pageNumber < 1 || pageSize < 1)
@@ -55,8 +90,32 @@ namespace Admin.Controllers
         }
 
         [HttpGet("{productId}")]
-        public IActionResult GetProductByID(int productId)
+        public async Task<IActionResult> GetProductByID([FromHeader(Name = "Authorization")] string bearerToken, int productId)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
+
             if (productId <= 0)
             {
                 return BadRequest("Product ID is required.");
@@ -90,8 +149,32 @@ namespace Admin.Controllers
         }
 
         [HttpPost("add-product")]
-        public async Task<IActionResult> AddProduct([FromForm] AddNewProduct product)
+        public async Task<IActionResult> AddProduct([FromHeader(Name = "Authorization")] string bearerToken, [FromForm] AddNewProduct product)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
+
             string base64String = "";
             string savedImagePath = "";
 
@@ -150,8 +233,32 @@ namespace Admin.Controllers
         }
 
         [HttpPut("edit-product")]
-        public async Task<IActionResult> UpdateProduct([FromBody] UpdateProduct product)
+        public async Task<IActionResult> UpdateProduct([FromHeader(Name = "Authorization")] string bearerToken, [FromBody] UpdateProduct product)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
+
             ProductRepositories repository = new();
 
             var result = await repository.UpdateProduct(product);
@@ -165,8 +272,32 @@ namespace Admin.Controllers
         }
 
         [HttpDelete("delete")]
-        public async Task<IActionResult> DeleteProduct([FromQuery] int productId)
+        public async Task<IActionResult> DeleteProduct([FromHeader(Name = "Authorization")] string bearerToken, [FromQuery] int productId)
         {
+            if (string.IsNullOrEmpty(bearerToken) || !bearerToken.StartsWith("Bearer "))
+            {
+                return Unauthorized("Invalid or missing token.");
+            }
+
+            var userGuid = TokenHelper.GetUserGuidFromToken(bearerToken);
+            if (userGuid == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            if (_userManagerService == null)
+            {
+                return StatusCode(500, "User manager not found.");
+            }
+
+            RoleHelper roleHelper = new(_userManagerService);
+            bool isAdmin = await roleHelper.IsAdmin(userGuid);
+
+            if (!isAdmin)
+            {
+                return Unauthorized("User is not authorized to access this resource.");
+            }
+
             if (productId <= 0)
             {
                 return BadRequest("Product ID is required.");
