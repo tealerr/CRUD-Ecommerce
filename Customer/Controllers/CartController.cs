@@ -72,6 +72,11 @@ namespace Customer.Controllers
 
             if (existingItem != null)
             {
+                if (existingItem.Quantity + item.Quantity < 1)
+                {
+                    return BadRequest("Item quantity cannot be less than 1.");
+                }
+
                 existingItem.Quantity += item.Quantity;
                 existingItem.Total = existingItem.Price * existingItem.Quantity;
                 var updateResult = await repository.UpdateCartItem(existingItem);
